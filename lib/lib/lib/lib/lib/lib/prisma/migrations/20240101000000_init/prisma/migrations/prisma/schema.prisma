@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  displayName    String?
+  tonePreference String   @default("professional")
+  defaultScene   String   @default("business_first_meeting")
+  bannedTopics   String[] @default([])
+  sessionId      String?  @unique
+  puns           Pun[]
+  communityLikes CommunityLike[]
+}
+
+model Pun {
+  id                   String   @id @default(cuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id])
+  inputText            String
+  scene                String
+  language             String
+  tone                 String
+  candidatesJson       Json
+  selectedText         String
+  professionalFitScore Int
+  safetyFlag           Boolean  @default(false)
+
+  createdAt            DateTime @default(now())
+  savedAt              DateTime @default(now())
+  publishedAt          DateTime?
+
+  likeStatus           String?
+  usedInRealLife       Boolean  @default(false)
+  notes                String?
+
+  isPublished          Boolean  @default(false)
+  isHidden             Boolean  @default(false)
+
+  communityLikeCount   Int      @default(0)
+  communitySaveCount   Int      @default(0)
+  reportCount          Int      @default(0)
+}
+
+model CommunityLike {
+  id        String   @id @default(cuid())
+  userId    String
+  punId     String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, punId])
+}
+
+model CommunitySave {
+  id        String   @id @default(cuid())
+  userId    String
+  punId     String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, punId])
+}
+
+model CommunityReport {
+  id        String   @id @default(cuid())
+  userId    String
+  punId     String
+  reason    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, punId])
+}
